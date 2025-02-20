@@ -1,0 +1,193 @@
+
+{%extends 'base.html'%}
+{% block head %}
+        <link rel="stylesheet" href="/static/css/style.css">
+        <link rel="stylesheet" href="/static/css/details.css">
+{% endblock %}
+{% block content %}
+
+
+
+        <div class="movie-header">
+            <img class="title-img" src="https://image.tmdb.org/t/p/original{{movie.poster_path}}" alt="" width="300px" height="350px">
+            <div class="movie-header-details">
+                <h1>{{movie.title}}</h1>
+                <div class="movie-header-text">
+                    <p>{{movie.release_date}}</p>
+                    <div class="movie-description-rating">
+                        <img src="/static/images/image 3.png" alt="">
+                        <img src="/static/images/rate.png" alt="" width="5px">
+                        <strong>{{movie.vote_average}}</strong>
+                        <p>number of votes: {{movie.vote_count}}</p>
+                    </div>
+                </div>
+                <p class="movie-overview">{{movie.overview}}</p>
+                {{movie.tagline}}
+                <p> lenght {{movie.runtime}}  minutes</p>
+            </div>
+            
+        </div>
+            <div class="carousel-wrapper">
+        {% for i in range(1,11) %}
+        <input id="slide{{i}}" type="radio" name="controls" {% if i==1 %}
+            checked="checked" {% endif %} />
+        {% endfor %}
+
+        {% for i in range(1,11) %}
+        <label for="slide{{i}}" class="nav-dot"></label>
+        {% endfor %}
+
+        {% for i in range(1,11) %}
+        <label for="slide{{i}}" class="left-arrow"></label>
+        {% endfor %}
+
+        {% for i in range(1,11) %}
+        <label for="slide{{i}}" class="right-arrow"> > </label>
+        {% endfor %}
+
+        <div class="carousel">
+            <ul>
+                {% for i in range(1,11) %}
+                <li>
+                    <img
+                        src="https://image.tmdb.org/t/p/original{{images.backdrops[i].file_path}}" />
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+          <div class="movies-video">
+            <iframe class="movies-video" width="700" height="500"
+                src="https://www.youtube.com/embed/{{video_key}}">
+            </iframe>
+        </div>
+            <div class="comments">
+                    <h1>Comments</h1>
+                    <form class="comment_form" autocomplete='off' method="post">
+                        <textarea name="content" type ="text" placeholder="Write your comment"> </textarea>
+                        {% if current_user.is_authenticated %}
+
+                            <button type="submit" class="comment_btn">Send</button>
+                        {% else %}
+                            <a href="{{ url_for('users.login' ) }}" class="comment_btn">Send</a>
+                        {% endif %}
+                    </form>
+            </div>
+                <div class="comments-list">
+                    {% for comment in comments %}
+                    <div class="comment-details" id="comment-{{ comment.id }}">
+                        <div class="comment-details-header">
+                            <h3>{{ comment.user.username }}</h3>
+                            <p>{{ comment.created_at.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                            <p>{{ comment.content }}</p>
+
+                        {% if current_user.is_authenticated %}
+                            <button class="delete-comment" data-comment-id="{{ comment.id }}">Видалити</button>
+                        {% else %}
+
+                        {% endif %}
+
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        <div class="movies"><h1>SIMILAR</h1></div>
+        <div class="movies">
+            {% for movie in similar[0:6]%}
+            <div class="movie">
+                <div class="images">
+                    <img src="https://image.tmdb.org/t/p/w200{{movie.poster_path}}" class="title" alt="">
+                </div>
+                <div class="">
+                    <a href="{{ url_for('core.movie_details', movie_id=movie.id ) }}">{{movie.title}}</a>
+                </div>
+                <div class="year">
+                    <p>{{movie.release_data}}</p>
+                </div>
+                <div>
+
+                    <img src="/static/images/rate.png" class="similar" width="30px" alt="">
+                    {{movie.vote_average}}
+                    <img src="/static/images/eye.png" class="similar" width="30px" alt="">
+
+                    <div class="movie-description-like">
+                        {% if current_user.is_authenticated %}
+                            {% if movie.id in favorite_movies %}
+                                <img class="movie-like" src="/static/images/heart2.png" data-movie-id="{{movie.id}}" alt="">
+                            {% else %}
+                            <img class="movie-like" src="/static/images/heart.png" data-movie-id="{{movie.id}}" alt="">
+                            {% endif %}
+                        {% else %}
+                            <a href="/login"><img  src="/static/images/heart.png" alt=""></a>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="movies-header">
+            <a href="/home" class="movies-header-link" >Back</a>
+        </div>
+<script>
+    let buttons = document.querySelectorAll(".movie-like")
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            console.log('click')
+            let movie_id = btn.dataset.movieId
+            console.log(movie_id)
+            let url = `http://127.0.0.1:5000/movies/favorite/${movie_id}`
+            fetch(url)
+                .then((res) => {
+                    return res.text()
+                })
+                .then((text) => {
+                    console.log(text)
+                    if (text.includes('saved')){
+                        btn.src = '/static/images/heart2.png'
+                    }
+                    else{
+                        btn.src = '/static/images/heart.png'
+                    }
+                })
+        })
+    })
+
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".delete-comment").forEach(button => {
+            button.addEventListener("click", function() {
+                const commentId = this.getAttribute("data-comment-id");
+                const commentElement = document.getElementById("comment-" + commentId);
+
+                if (confirm("Ви впевнені, що хочете видалити цей коментар?")) {
+                    fetch(`/delete_comment/${commentId}`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCSRFToken(), // Додайте CSRF-токен для безпеки
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            commentElement.remove();
+                        } else {
+                            alert("Помилка при видаленні коментаря");
+                        }
+                    })
+                    .catch(error => console.error("Помилка:", error));
+                }
+            });
+        });
+    });
+
+    function getCSRFToken() {
+        const csrfToken = document.cookie.match(/csrftoken=([^;]+)/);
+        return csrfToken ? csrfToken[1] : "";
+    }
+</script>
+
+{% endblock %}

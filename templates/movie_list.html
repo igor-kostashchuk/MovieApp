@@ -1,0 +1,90 @@
+{%extends 'base.html'%}
+{% block head %}
+        <link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
+{% block content %}
+
+            <div class="movies-header">
+                <a href="/home" class="movies-header-link" >Back to all movies</a>
+            </div>
+        <div class="movies">
+            {% for movie in movies%}
+            <div class="movie">
+                <div class="images">
+                    <img src="https://image.tmdb.org/t/p/w200{{movie.poster_path}}" alt="">
+                </div>
+                <div>
+                    <a href="{{ url_for('core.movie_details', movie_id=movie.id ) }}", class="title">{{movie.title}}</a>
+                </div>
+                <div class="year">
+                    <p>{{movie.release_data}}</p>
+                </div>
+                <div>
+
+                    <img src="/static/images/rate.png" width="30px" alt="">
+                    {{movie.vote_average}}
+                    <img src="/static/images/eye .png" alt="">
+
+                    <div class="movie-description-like">
+                        {% if current_user.is_authenticated %}
+                            {% if movie.id in favorite_movies %}
+                                <img class="movie-like" src="/static/images/heart2.png" data-movie-id="{{movie.id}}" alt="">
+                            {% else %}
+                            <img class="movie-like" src="/static/images/heart.png" data-movie-id="{{movie.id}}" alt="">
+                            {% endif %}
+                        {% else %}
+                            <a href="/login"><img  src="/static/images/heart.png" alt=""></a>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="page_buttons">
+            {% for i in range(page_start_index,page_end_index) %}
+                <button {% if page == i %}
+                class="page_btn active"
+                {% else %}
+                class="page_btn"
+                {% endif %}
+
+                onclick="changeMoviesPage('{{i}}')">{{i}}</button>
+            {% endfor %}
+        </div>
+
+<script>
+    let buttons = document.querySelectorAll(".movie-like")
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            console.log('click')
+            let movie_id = btn.dataset.movieId
+            console.log(movie_id)
+            let url = `http://127.0.0.1:5000/movies/favorite/${movie_id}`
+            fetch(url)
+                .then((res) => {
+                    return res.text()
+                })
+                .then((text) => {
+                    console.log(text)
+                    if (text.includes('saved')){
+                        btn.src = '/static/images/heart2.png'
+                    }
+                    else{
+                        btn.src = '/static/images/heart.png'
+                    }
+                })
+        })
+    })
+
+</script>
+<script>
+   function changeMoviesPage(page){
+        const currentParams=new URLSearchParams(window.location.search)
+        console.log("Params: " , currentParams)
+        currentParams.set('page', page)
+        window.location.search=currentParams.toString()
+    }
+</script>
+{% endblock %}

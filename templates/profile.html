@@ -1,0 +1,58 @@
+{%extends 'base.html'%}
+{% block head %}
+        <link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
+{% block content %}
+    <div>
+        <h1>Hello {{current_user.username}}!</h1>
+        <h2>It's your profile</h2>
+        <h3>Here you can see your favorites films</h3>
+    </div>
+   <div class="movies">
+            {% for movie in favorite_movies%}
+            {%if movie.id%}
+
+            <div class="movie">
+                <div class="images">
+                    <img src="https://image.tmdb.org/t/p/w200{{movie.poster_path}}" alt="">
+                </div>
+                <div>
+                        <a href="{{ url_for('core.movie_details', movie_id=movie.id ) }}", class="title">{{movie.title}}</a>
+                </div>
+                <div class="year">
+                    <p>{{movie.release_data}}</p>
+                </div>
+                 <div>
+
+                    <img src="/static/images/rate.png" width="30px" alt="">
+                    {{movie.vote_average}}
+                    <img src="/static/images/eye .png" alt="">
+
+                        <img class="movie-like" src="/static/images/heart.png" data-movie-id="{{movie.id}}" alt="">
+
+
+                </div>
+            </div>
+            {%endif%}
+            {% endfor %}
+        </div>
+<script>
+    let buttons = document.querySelectorAll(".movie-like")
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            console.log('click')
+            let movie_id = btn.dataset.movieId
+            console.log(movie_id)
+            let url = `http://127.0.0.1:5000/movies/favorite/${movie_id}`
+            fetch(url)
+                .then((res) => {
+                    if (res.ok){
+                        const movie = btn .parentElement.parentElement;
+                        movie.remove()
+                    }
+                })
+        })
+    })
+
+</script>
+{%endblock%}

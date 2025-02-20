@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    {%block head%}
+
+
+    {%endblock%}
+
+</head>
+<body>
+    <nav class="nav">
+        <h1 class="nav-title"><a href="/" class="MovieApp">MovieApp</a></h1>
+        <ul class="nav-links">
+            <li class="nav-link">Home</li>
+            <li class="nav-link">Series</li>
+            <li class="nav-link">Movies</li>
+        </ul>
+        <form class="nav-search" method="get" action="{{ url_for('core.search')}}">
+            <input type="text" name="query">
+            <button class="search-button"><img src="/static/images/nav/search 1.png" alt=""></button>
+        </form>
+        <div class="nav-profile">
+            <img src="/static/images/gift 1.png"width = "30", height = "30", alt="">
+            <img src="/static/images/bell 1.png"width = "30", height = "30", alt="">
+            <a href="/profile"><img src="/static/images/Ellipse 1.png"width = "30", height = "30", alt=""></a>
+            <div class="aush-btn">
+                {% if current_user.is_authenticated %}
+                    <a class="auth-btn" href="{{ url_for('users.logout' ) }}">Logout</a>
+                {% else %}
+                    <a class="auth-btn" href="{{ url_for('users.registration' ) }}">Signup</a>
+                {% endif %}
+                {% if current_user.is_authenticated %}
+
+                {% else %}
+                    <a class="auth-btn" href="{{ url_for('users.login' ) }}">Login</a>
+                {% endif %}
+            </div>
+
+        </div >
+    </nav>
+    <div class="container">
+
+    {%block content%}
+
+
+    {%endblock%}
+
+    {%block end%}
+
+
+    {%endblock%}
+    </div>
+</body>
+</html>
