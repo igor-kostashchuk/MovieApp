@@ -56,8 +56,21 @@ def movie_details(movie_id):
     movie = get_movie_details(movie_id)
     images = get_movie_images(movie_id)
     similar = get_similar_movies(movie_id)
-    videos = get_movie_video(movie_id)
+
+    fetched_videos = get_movie_video(movie_id)
+    videos = [
+        item
+        for item in fetched_videos
+        if item.get("type") == "Trailer" and item.get("official")
+    ]
     print(videos[0])
+
+    if len(videos) > 1:
+        video_key = videos[0]["key"]
+    elif len(fetched_videos) > 1:
+        video_key = fetched_videos[0]["key"]
+    else:
+        video_key = None
 
     if request.method == "POST":
         content = request.form.get("content")
@@ -70,7 +83,9 @@ def movie_details(movie_id):
 
     comments =Comment.query.filter_by(movie_id=movie_id).all()
     print(comments)
-    return render_template('details.html', movie=movie, images=images, similar=similar, video_key=videos[0]["key"], comments = comments)
+    return render_template('details.html', movie=movie, images=images, similar=similar, video_key=video_key, comments = comments)
+
+
 
 @core.route('/delete_comment/<int:comment_id>', methods=['POST'])
 @login_required
